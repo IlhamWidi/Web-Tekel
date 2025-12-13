@@ -1,0 +1,365 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\ProductionReport;
+use App\Models\ProductionReportDetail;
+use App\Models\Shift;
+use App\Models\Line;
+use App\Models\Motif;
+use App\Models\Dimension;
+use App\Models\ActivityLog;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
+use Illuminate\Http\RedirectResponse;
+
+class ProductionReportController extends Controller
+{
+    public function index(Request $request): Response
+    {
+        $query = ProductionReport::with(['shift', 'line', 'motif', 'dimension', 'creator', 'details']);
+
+        // Apply filters
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        if ($request->filled('shift_id')) {
+            $query->where('shift_id', $request->shift_id);
+        }
+
+        if ($request->filled('line_id')) {
+            $query->where('line_id', $request->line_id);
+        }
+
+        if ($request->filled('motif_id')) {
+            $query->where('motif_id', $request->motif_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $reports = $query->orderBy('date', 'desc')
+            ->orderBy('shift_id', 'desc')
+            ->paginate(20)
+            ->through(fn($report) => [
+                'id' => $report->id,
+                'date' => $report->date->format('d/m/Y'),
+                'shift' => $report->shift->name,
+                'line' => $report->line->name,
+                'motif' => $report->motif->name,
+                'dimension' => $report->dimension->name,
+                'status' => $report->status,
+                'total_premium' => $report->total_premium,
+                'total_defects' => $report->total_defects,
+                'premium_percentage' => $report->premium_percentage,
+                'can_edit' => $report->canEdit() && $request->user()->can('edit reports'),
+                'can_approve' => $report->canApprove() && $request->user()->can('approve reports'),
+            ]);
+
+        return Inertia::render('Admin/Reports/Index', [
+            'reports' => $reports,
+            'filters' => $request->only(['date_from', 'date_to', 'shift_id', 'line_id', 'motif_id', 'status']),
+            'shifts' => Shift::active()->get(),
+            'lines' => Line::active()->get(),
+            'motifs' => Motif::active()->get(),
+        ]);
+    }
+
+    public function create(): Response
+    {
+        return Inertia::render('Admin/Reports/Create', [
+            'shifts' => Shift::active()->get(),
+            'lines' => Line::active()->get(),
+            'motifs' => Motif::active()->get(),
+            'dimensions' => Dimension::active()->get(),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'shift_id' => 'required|exists:shifts,id',
+            'line_id' => 'required|exists:lines,id',
+            'motif_id' => 'required|exists:motifs,id',
+            'dimension_id' => 'required|exists:dimensions,id',
+            'details' => 'required|array|min:1',
+            'details.*.time' => 'required',
+            'details.*.sequence_no' => 'required|integer',
+            'details.*.table_no' => 'required|string',
+            'details.*.x1' => 'nullable|numeric',
+            'details.*.x2' => 'nullable|numeric',
+            'details.*.x3' => 'nullable|numeric',
+            'details.*.y1' => 'nullable|numeric',
+            'details.*.y2' => 'nullable|numeric',
+            'details.*.y3' => 'nullable|numeric',
+            'details.*.premium_qty' => 'required|integer|min:0',
+            'details.*.crack_qty' => 'required|integer|min:0',
+            'details.*.surface_qty' => 'required|integer|min:0',
+            'details.*.gupil_qty' => 'required|integer|min:0',
+            'details.*.other_reject_qty' => 'nullable|integer|min:0',
+            'details.*.notes' => 'nullable|string',
+            'status' => 'required|in:draft,submitted',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $report = ProductionReport::create([
+                'date' => $validated['date'],
+                'shift_id' => $validated['shift_id'],
+                'line_id' => $validated['line_id'],
+                'motif_id' => $validated['motif_id'],
+                'dimension_id' => $validated['dimension_id'],
+                'status' => $validated['status'],
+                'created_by' => $request->user()->id,
+            ]);
+
+            foreach ($validated['details'] as $detail) {
+                ProductionReportDetail::create([
+                    'production_report_id' => $report->id,
+                    ...$detail,
+                ]);
+            }
+
+            ActivityLog::log(
+                'created_report',
+                ProductionReport::class,
+                $report->id,
+                'Membuat laporan produksi baru'
+            );
+
+            DB::commit();
+
+            return redirect()->route('admin.reports.show', $report)
+                ->with('success', 'Laporan produksi berhasil dibuat.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal membuat laporan: ' . $e->getMessage());
+        }
+    }
+
+    public function show(Request $request, ProductionReport $report): Response
+    {
+        $report->load(['shift', 'line', 'motif', 'dimension', 'creator', 'updater', 'approver', 'details']);
+
+        return Inertia::render('Admin/Reports/Show', [
+            'report' => [
+                'id' => $report->id,
+                'date' => $report->date->format('d/m/Y'),
+                'shift' => $report->shift,
+                'line' => $report->line,
+                'motif' => $report->motif,
+                'dimension' => $report->dimension,
+                'status' => $report->status,
+                'created_by' => $report->creator->name,
+                'updated_by' => $report->updater?->name,
+                'approval_user' => $report->approver?->name,
+                'approval_note' => $report->approval_note,
+                'approval_date' => $report->approval_date?->format('d/m/Y H:i'),
+                'total_premium' => $report->total_premium,
+                'total_defects' => $report->total_defects,
+                'total_production' => $report->total_production,
+                'premium_percentage' => $report->premium_percentage,
+                'defect_percentage' => $report->defect_percentage,
+                'can_edit' => $report->canEdit() && $request->user()->can('edit reports'),
+                'can_approve' => $report->canApprove() && $request->user()->can('approve reports'),
+                'details' => $report->details->map(fn($detail) => [
+                    'id' => $detail->id,
+                    'time' => $detail->time->format('H:i'),
+                    'sequence_no' => $detail->sequence_no,
+                    'table_no' => $detail->table_no,
+                    'x1' => $detail->x1,
+                    'x2' => $detail->x2,
+                    'x3' => $detail->x3,
+                    'y1' => $detail->y1,
+                    'y2' => $detail->y2,
+                    'y3' => $detail->y3,
+                    'premium_qty' => $detail->premium_qty,
+                    'crack_qty' => $detail->crack_qty,
+                    'surface_qty' => $detail->surface_qty,
+                    'gupil_qty' => $detail->gupil_qty,
+                    'other_reject_qty' => $detail->other_reject_qty,
+                    'total_defects' => $detail->total_defects,
+                    'total_quantity' => $detail->total_quantity,
+                    'notes' => $detail->notes,
+                ]),
+            ],
+        ]);
+    }
+
+    public function edit(ProductionReport $report): Response
+    {
+        if (!$report->canEdit()) {
+            abort(403, 'Laporan ini tidak dapat diedit.');
+        }
+
+        $report->load(['details']);
+
+        return Inertia::render('Admin/Reports/Edit', [
+            'report' => [
+                'id' => $report->id,
+                'date' => $report->date->format('Y-m-d'),
+                'shift_id' => $report->shift_id,
+                'line_id' => $report->line_id,
+                'motif_id' => $report->motif_id,
+                'dimension_id' => $report->dimension_id,
+                'status' => $report->status,
+                'details' => $report->details->map(fn($detail) => [
+                    'id' => $detail->id,
+                    'time' => $detail->time->format('H:i'),
+                    'sequence_no' => $detail->sequence_no,
+                    'table_no' => $detail->table_no,
+                    'x1' => $detail->x1,
+                    'x2' => $detail->x2,
+                    'x3' => $detail->x3,
+                    'y1' => $detail->y1,
+                    'y2' => $detail->y2,
+                    'y3' => $detail->y3,
+                    'premium_qty' => $detail->premium_qty,
+                    'crack_qty' => $detail->crack_qty,
+                    'surface_qty' => $detail->surface_qty,
+                    'gupil_qty' => $detail->gupil_qty,
+                    'other_reject_qty' => $detail->other_reject_qty,
+                    'notes' => $detail->notes,
+                ]),
+            ],
+            'shifts' => Shift::active()->get(),
+            'lines' => Line::active()->get(),
+            'motifs' => Motif::active()->get(),
+            'dimensions' => Dimension::active()->get(),
+        ]);
+    }
+
+    public function update(Request $request, ProductionReport $report): RedirectResponse
+    {
+        if (!$report->canEdit()) {
+            return back()->with('error', 'Laporan ini tidak dapat diedit.');
+        }
+
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'shift_id' => 'required|exists:shifts,id',
+            'line_id' => 'required|exists:lines,id',
+            'motif_id' => 'required|exists:motifs,id',
+            'dimension_id' => 'required|exists:dimensions,id',
+            'details' => 'required|array|min:1',
+            'details.*.id' => 'nullable|exists:production_report_details,id',
+            'details.*.time' => 'required',
+            'details.*.sequence_no' => 'required|integer',
+            'details.*.table_no' => 'required|string',
+            'details.*.x1' => 'nullable|numeric',
+            'details.*.x2' => 'nullable|numeric',
+            'details.*.x3' => 'nullable|numeric',
+            'details.*.y1' => 'nullable|numeric',
+            'details.*.y2' => 'nullable|numeric',
+            'details.*.y3' => 'nullable|numeric',
+            'details.*.premium_qty' => 'required|integer|min:0',
+            'details.*.crack_qty' => 'required|integer|min:0',
+            'details.*.surface_qty' => 'required|integer|min:0',
+            'details.*.gupil_qty' => 'required|integer|min:0',
+            'details.*.other_reject_qty' => 'nullable|integer|min:0',
+            'details.*.notes' => 'nullable|string',
+            'status' => 'required|in:draft,submitted',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $report->update([
+                'date' => $validated['date'],
+                'shift_id' => $validated['shift_id'],
+                'line_id' => $validated['line_id'],
+                'motif_id' => $validated['motif_id'],
+                'dimension_id' => $validated['dimension_id'],
+                'status' => $validated['status'],
+                'updated_by' => $request->user()->id,
+            ]);
+
+            // Delete existing details and recreate
+            $report->details()->delete();
+
+            foreach ($validated['details'] as $detail) {
+                unset($detail['id']);
+                ProductionReportDetail::create([
+                    'production_report_id' => $report->id,
+                    ...$detail,
+                ]);
+            }
+
+            ActivityLog::log(
+                'updated_report',
+                ProductionReport::class,
+                $report->id,
+                'Mengupdate laporan produksi'
+            );
+
+            DB::commit();
+
+            return redirect()->route('admin.reports.show', $report)
+                ->with('success', 'Laporan produksi berhasil diupdate.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal mengupdate laporan: ' . $e->getMessage());
+        }
+    }
+
+    public function approve(Request $request, ProductionReport $report): RedirectResponse
+    {
+        if (!$report->canApprove()) {
+            return back()->with('error', 'Laporan ini tidak dapat diapprove.');
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'approval_note' => 'nullable|string',
+        ]);
+
+        $report->update([
+            'status' => $validated['status'],
+            'approval_user_id' => $request->user()->id,
+            'approval_note' => $validated['approval_note'] ?? null,
+            'approval_date' => now(),
+        ]);
+
+        ActivityLog::log(
+            $validated['status'] === 'approved' ? 'approved_report' : 'rejected_report',
+            ProductionReport::class,
+            $report->id,
+            ucfirst($validated['status']) . ' laporan produksi'
+        );
+
+        return back()->with('success', 'Status laporan berhasil diupdate.');
+    }
+
+    public function destroy(Request $request, ProductionReport $report): RedirectResponse
+    {
+        if (!$request->user()->can('delete reports')) {
+            abort(403);
+        }
+
+        if ($report->status !== 'draft') {
+            return back()->with('error', 'Hanya laporan draft yang dapat dihapus.');
+        }
+
+        ActivityLog::log(
+            'deleted_report',
+            ProductionReport::class,
+            $report->id,
+            'Menghapus laporan produksi'
+        );
+
+        $report->delete();
+
+        return redirect()->route('admin.reports.index')
+            ->with('success', 'Laporan berhasil dihapus.');
+    }
+}
