@@ -22,6 +22,11 @@ class ProductionReportController extends Controller
     public function index(Request $request): Response
     {
         $query = ProductionReport::with(['shift', 'line', 'creator', 'details']);
+        
+        \Log::info('Reports Index accessed', [
+            'user_id' => $request->user()->id,
+            'filters' => $request->all()
+        ]);
 
         // Apply filters
         if ($request->filled('date_from')) {
@@ -60,6 +65,11 @@ class ProductionReportController extends Controller
                 'can_edit' => $report->canEdit() && $request->user()->can('edit production reports'),
                 'can_approve' => $report->canApprove() && $request->user()->can('approve production reports'),
             ]);
+        
+        \Log::info('Reports data prepared', [
+            'count' => $reports->total(),
+            'current_page' => $reports->currentPage()
+        ]);
 
         return Inertia::render('Admin/Reports/Index', [
             'reports' => $reports,

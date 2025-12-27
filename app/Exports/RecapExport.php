@@ -31,12 +31,12 @@ class RecapExport implements FromCollection, WithHeadings, WithMapping, WithStyl
     public function collection()
     {
         $query = ProductionReportDetail::with([
-            'report.line',
-            'report.shift',
-            'report.creator',
+            'productionReport.line',
+            'productionReport.shift',
+            'productionReport.creator',
             'motif',
             'dimension'
-        ])->whereHas('report', function ($q) {
+        ])->whereHas('productionReport', function ($q) {
             if (isset($this->filters['start_date'])) {
                 $q->whereDate('production_date', '>=', $this->filters['start_date']);
             }
@@ -106,10 +106,10 @@ class RecapExport implements FromCollection, WithHeadings, WithMapping, WithStyl
 
         return [
             $this->rowNumber,
-            $detail->report->report_number,
-            \Carbon\Carbon::parse($detail->report->production_date)->format('d/m/Y'),
-            $detail->report->line->name,
-            $detail->report->shift->name,
+            $detail->productionReport->report_number,
+            \Carbon\Carbon::parse($detail->productionReport->production_date)->format('d/m/Y'),
+            $detail->productionReport->line->name,
+            $detail->productionReport->shift->name,
             $detail->motif->code,
             $detail->motif->name,
             $detail->dimension->size,
@@ -117,8 +117,8 @@ class RecapExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             $detail->actual_quantity,
             $detail->ng_quantity,
             $achievement,
-            $statusMap[$detail->report->status] ?? $detail->report->status,
-            $detail->report->creator->name,
+            $statusMap[$detail->productionReport->status] ?? $detail->productionReport->status,
+            $detail->productionReport->creator->name,
             \Carbon\Carbon::parse($detail->created_at)->format('d/m/Y H:i'),
         ];
     }

@@ -6,7 +6,7 @@ import FlashMessage from '@/Components/FlashMessage';
 import { Plus, Search, Eye, Edit, Trash2, CheckCircle, XCircle, FileText } from 'lucide-react';
 import { useState } from 'react';
 
-export default function Index({ reports, filters, shifts, lines, motifs, auth }) {
+export default function Index({ reports, filters, shifts, lines, auth }) {
     const [search, setSearch] = useState(filters.search || '');
 
     const handleSearch = (e) => {
@@ -208,17 +208,17 @@ export default function Index({ reports, filters, shifts, lines, motifs, auth })
                                 reports.data.map(report => (
                                     <tr key={report.id} className="hover:bg-gray-50">
                                         <td className="px-4 py-3 text-sm font-mono text-gray-900">{report.report_number}</td>
-                                        <td className="px-4 py-3 text-sm text-gray-900">{report.report_date}</td>
-                                        <td className="px-4 py-3 text-sm text-gray-900">{report.shift.name}</td>
-                                        <td className="px-4 py-3 text-sm text-gray-900">{report.line.name}</td>
+                                        <td className="px-4 py-3 text-sm text-gray-900">{report.date}</td>
+                                        <td className="px-4 py-3 text-sm text-gray-900">{report.shift}</td>
+                                        <td className="px-4 py-3 text-sm text-gray-900">{report.line}</td>
                                         <td className="px-4 py-3 text-sm text-right text-gray-900">
-                                            {report.total_target.toLocaleString()}
+                                            {report.total_target?.toLocaleString() || 0}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-right font-semibold text-blue-600">
-                                            {report.total_actual.toLocaleString()}
+                                            {report.total_actual?.toLocaleString() || 0}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-right text-red-600">
-                                            {report.total_ng.toLocaleString()}
+                                            {report.total_ng?.toLocaleString() || 0}
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             {getStatusBadge(report.status)}
@@ -231,7 +231,7 @@ export default function Index({ reports, filters, shifts, lines, motifs, auth })
                                                     </button>
                                                 </Link>
 
-                                                {canEdit && report.status === 'draft' && (
+                                                {report.can_edit && (
                                                     <Link href={`/admin/reports/${report.id}/edit`}>
                                                         <button className="text-green-600 hover:text-green-800" title="Edit">
                                                             <Edit className="w-4 h-4" />
@@ -239,7 +239,7 @@ export default function Index({ reports, filters, shifts, lines, motifs, auth })
                                                     </Link>
                                                 )}
 
-                                                {canApprove && report.status === 'pending' && (
+                                                {report.can_approve && (
                                                     <>
                                                         <button
                                                             onClick={() => handleApprove(report.id)}
@@ -258,7 +258,7 @@ export default function Index({ reports, filters, shifts, lines, motifs, auth })
                                                     </>
                                                 )}
 
-                                                {canDelete && report.status === 'draft' && (
+                                                {canDelete && report.can_edit && (
                                                     <button
                                                         onClick={() => handleDelete(report.id)}
                                                         className="text-red-600 hover:text-red-800"

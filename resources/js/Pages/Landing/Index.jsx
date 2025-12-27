@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import PublicLayout from '@/Layouts/PublicLayout';
+import HeroSection from '@/Components/HeroSection';
 import { 
     CheckCircle, 
     Award, 
@@ -19,33 +20,8 @@ export default function Index() {
         <PublicLayout>
             <Head title="PT Surya Multi Cemerlang - Produsen Keramik Premium" />
 
-            {/* Hero Section */}
-            <section className="relative bg-gradient-to-br from-blue-900 to-blue-700 text-white py-24">
-                <div className="container mx-auto px-4">
-                    <div className="max-w-4xl">
-                        <h1 className="text-5xl md:text-6xl font-bold mb-6">
-                            Manufaktur Keramik Premium dengan Kontrol Kualitas Per Shift
-                        </h1>
-                        <p className="text-xl md:text-2xl mb-8 text-blue-100">
-                            Menghadirkan kualitas konsisten melalui sistem pencatatan produksi terstandarisasi dan kontrol kualitas premium di setiap shift produksi.
-                        </p>
-                        <div className="flex flex-wrap gap-4">
-                            <a 
-                                href="#produk" 
-                                className="px-8 py-4 bg-white text-blue-900 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-                            >
-                                Lihat Katalog Produk
-                            </a>
-                            <a 
-                                href="#kontak" 
-                                className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-900 transition-colors"
-                            >
-                                Hubungi Tim Sales
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            {/* Hero Section - Enhanced with Visual Elements */}
+            <HeroSection />
 
             {/* Trust Indicators */}
             <section className="py-6 bg-gray-100 border-y border-gray-200">
@@ -150,16 +126,34 @@ export default function Index() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
                         {[
-                            { name: 'Revolver Gold GL', size: '60x60 cm', type: 'Floor Tile', finish: 'Glazed' },
-                            { name: 'Marble White', size: '50x50 cm', type: 'Floor Tile', finish: 'Polished' },
-                            { name: 'Stone Grey', size: '60x60 cm', type: 'Floor/Wall', finish: 'Matt' },
-                            { name: 'Wood Brown', size: '30x60 cm', type: 'Wall Tile', finish: 'Matt' },
-                            { name: 'Granite Black', size: '40x40 cm', type: 'Floor Tile', finish: 'Polished' },
-                            { name: 'Classic Beige', size: '25x50 cm', type: 'Wall Tile', finish: 'Glazed' },
+                            { name: 'Revolver Gold GL', size: '60x60 cm', type: 'Floor Tile', finish: 'Glazed', colors: ['from-amber-300', 'via-yellow-400', 'to-amber-500'] },
+                            { name: 'Marble White', size: '50x50 cm', type: 'Floor Tile', finish: 'Polished', colors: ['from-gray-50', 'via-gray-100', 'to-gray-200'] },
+                            { name: 'Stone Grey', size: '60x60 cm', type: 'Floor/Wall', finish: 'Matt', colors: ['from-slate-400', 'via-slate-500', 'to-slate-600'] },
+                            { name: 'Wood Brown', size: '30x60 cm', type: 'Wall Tile', finish: 'Matt', colors: ['from-amber-600', 'via-amber-700', 'to-amber-800'] },
+                            { name: 'Granite Black', size: '40x40 cm', type: 'Floor Tile', finish: 'Polished', colors: ['from-gray-800', 'via-gray-900', 'to-black'] },
+                            { name: 'Classic Beige', size: '25x50 cm', type: 'Wall Tile', finish: 'Glazed', colors: ['from-stone-200', 'via-stone-300', 'to-stone-400'] },
                         ].map((product, idx) => (
-                            <div key={idx} className="bg-gray-100 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-                                <div className="h-48 bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                                    <span className="text-gray-500 text-sm">Product Image</span>
+                            <div key={idx} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                                <div className={`relative h-64 bg-gradient-to-br ${product.colors.join(' ')} overflow-hidden group`}>
+                                    {/* Ceramic texture pattern */}
+                                    <div className="absolute inset-0 opacity-30" style={{
+                                        backgroundImage: `
+                                            linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
+                                            linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%),
+                                            linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.1) 75%),
+                                            linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.1) 75%)
+                                        `,
+                                        backgroundSize: '20px 20px',
+                                        backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px'
+                                    }}></div>
+                                    {/* Glossy shine effect */}
+                                    <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/30 to-transparent"></div>
+                                    {/* Hover overlay */}
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-white text-sm font-medium bg-blue-600 px-4 py-2 rounded-lg">
+                                            Lihat Detail
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="p-6">
                                     <h3 className="text-xl font-semibold text-gray-900 mb-2">{product.name}</h3>
@@ -232,14 +226,26 @@ export default function Index() {
                     <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">Segmen & Portofolio</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {[
-                            { title: 'Residensial', description: 'Rumah, apartemen, dan kompleks perumahan premium' },
-                            { title: 'Komersial', description: 'Mall, perkantoran, dan pusat bisnis' },
-                            { title: 'Hospitality', description: 'Hotel, resort, dan restoran mewah' },
-                            { title: 'Fasilitas Publik', description: 'Bandara, stasiun, dan gedung pemerintahan' },
+                            { title: 'Residensial', description: 'Rumah, apartemen, dan kompleks perumahan premium', gradient: 'from-blue-400 to-blue-600', icon: Building2 },
+                            { title: 'Komersial', description: 'Mall, perkantoran, dan pusat bisnis', gradient: 'from-purple-400 to-purple-600', icon: Building2 },
+                            { title: 'Hospitality', description: 'Hotel, resort, dan restoran mewah', gradient: 'from-pink-400 to-pink-600', icon: Building2 },
+                            { title: 'Fasilitas Publik', description: 'Bandara, stasiun, dan gedung pemerintahan', gradient: 'from-green-400 to-green-600', icon: Building2 },
                         ].map((segment, idx) => (
-                            <div key={idx} className="bg-gray-50 p-6 rounded-lg border border-gray-200 hover:shadow-lg transition-shadow">
-                                <div className="h-32 bg-gradient-to-br from-gray-200 to-gray-300 rounded-lg mb-4 flex items-center justify-center">
-                                    <Building2 className="w-12 h-12 text-gray-500" />
+                            <div key={idx} className="bg-white p-6 rounded-lg border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+                                <div className={`relative h-48 bg-gradient-to-br ${segment.gradient} rounded-lg mb-4 overflow-hidden`}>
+                                    {/* Building silhouette pattern */}
+                                    <div className="absolute inset-0 opacity-20" style={{
+                                        backgroundImage: `
+                                            repeating-linear-gradient(90deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 2px, transparent 2px, transparent 20px),
+                                            repeating-linear-gradient(0deg, rgba(255,255,255,0.1) 0px, rgba(255,255,255,0.1) 2px, transparent 2px, transparent 25px)
+                                        `
+                                    }}></div>
+                                    {/* Icon */}
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <segment.icon className="w-16 h-16 text-white/80 group-hover:scale-110 transition-transform duration-300" />
+                                    </div>
+                                    {/* Shine effect */}
+                                    <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500"></div>
                                 </div>
                                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{segment.title}</h3>
                                 <p className="text-gray-600">{segment.description}</p>
@@ -282,13 +288,122 @@ export default function Index() {
                     <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">Berita & Kegiatan</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {[
-                            { date: '15 Nov 2025', title: 'Peluncuran Koleksi Motif Baru', excerpt: 'Kami memperkenalkan 5 motif baru dengan teknologi printing terkini...' },
-                            { date: '10 Okt 2025', title: 'Partisipasi di Indonesia BuildTech Expo', excerpt: 'PT Surya Multi Cemerlang berpartisipasi aktif dalam pameran konstruksi terbesar...' },
-                            { date: '5 Sep 2025', title: 'Program Pelatihan Operator Produksi', excerpt: 'Meluncurkan program pelatihan komprehensif untuk meningkatkan skill operator...' },
+                            { 
+                                date: '15 Nov 2025', 
+                                title: 'Peluncuran Koleksi Motif Baru', 
+                                excerpt: 'Kami memperkenalkan 5 motif baru dengan teknologi printing terkini...', 
+                                gradient: 'from-slate-700 via-slate-600 to-slate-500',
+                                type: 'product'
+                            },
+                            { 
+                                date: '10 Okt 2025', 
+                                title: 'Partisipasi di Indonesia BuildTech Expo', 
+                                excerpt: 'PT Surya Multi Cemerlang berpartisipasi aktif dalam pameran konstruksi terbesar...', 
+                                gradient: 'from-blue-600 via-indigo-600 to-purple-600',
+                                type: 'expo'
+                            },
+                            { 
+                                date: '5 Sep 2025', 
+                                title: 'Program Pelatihan Operator Produksi', 
+                                excerpt: 'Meluncurkan program pelatihan komprehensif untuk meningkatkan skill operator...', 
+                                gradient: 'from-emerald-600 via-teal-600 to-cyan-600',
+                                type: 'training'
+                            },
                         ].map((news, idx) => (
-                            <div key={idx} className="bg-gray-50 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-                                <div className="h-48 bg-gradient-to-br from-blue-200 to-blue-300 flex items-center justify-center">
-                                    <span className="text-gray-600">News Image</span>
+                            <div key={idx} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 group cursor-pointer">
+                                <div className={`relative h-56 bg-gradient-to-br ${news.gradient} overflow-hidden`}>
+                                    {/* Peluncuran Produk - Ceramic Tiles Display */}
+                                    {news.type === 'product' && (
+                                        <>
+                                            {/* Ceramic tiles grid pattern */}
+                                            <div className="absolute inset-0 opacity-20" style={{
+                                                backgroundImage: `
+                                                    repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(255,255,255,0.15) 50px, rgba(255,255,255,0.15) 52px),
+                                                    repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(255,255,255,0.15) 50px, rgba(255,255,255,0.15) 52px)
+                                                `,
+                                            }}></div>
+                                            {/* Ceramic tile samples */}
+                                            <div className="absolute inset-0 flex items-center justify-center gap-2 p-4">
+                                                <div className="w-20 h-28 bg-gradient-to-br from-amber-300 to-amber-500 rounded shadow-lg transform -rotate-6 opacity-80"></div>
+                                                <div className="w-20 h-28 bg-gradient-to-br from-slate-200 to-slate-400 rounded shadow-lg transform rotate-3 opacity-90 scale-110"></div>
+                                                <div className="w-20 h-28 bg-gradient-to-br from-blue-300 to-blue-500 rounded shadow-lg transform -rotate-3 opacity-80"></div>
+                                            </div>
+                                            {/* Sparkle effects for new product */}
+                                            <div className="absolute top-8 right-12 w-3 h-3 bg-white rounded-full animate-ping"></div>
+                                            <div className="absolute bottom-12 left-8 w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                        </>
+                                    )}
+                                    
+                                    {/* Expo - Exhibition Booth */}
+                                    {news.type === 'expo' && (
+                                        <>
+                                            {/* Exhibition hall pattern */}
+                                            <div className="absolute inset-0 opacity-15" style={{
+                                                backgroundImage: `
+                                                    linear-gradient(135deg, transparent 0%, transparent 45%, rgba(255,255,255,0.2) 45%, rgba(255,255,255,0.2) 55%, transparent 55%, transparent 100%)
+                                                `,
+                                                backgroundSize: '30px 30px'
+                                            }}></div>
+                                            {/* Booth structure */}
+                                            <div className="absolute inset-0 flex items-end justify-center pb-8">
+                                                {/* Booth panels */}
+                                                <div className="flex items-end gap-2">
+                                                    <div className="w-16 h-32 bg-white/20 backdrop-blur-sm rounded-t-lg border-2 border-white/30"></div>
+                                                    <div className="w-24 h-40 bg-white/25 backdrop-blur-sm rounded-t-lg border-2 border-white/40 flex flex-col items-center justify-center gap-2">
+                                                        <div className="w-16 h-12 bg-white/30 rounded"></div>
+                                                        <div className="w-12 h-2 bg-white/40 rounded"></div>
+                                                        <div className="w-12 h-2 bg-white/40 rounded"></div>
+                                                    </div>
+                                                    <div className="w-16 h-32 bg-white/20 backdrop-blur-sm rounded-t-lg border-2 border-white/30"></div>
+                                                </div>
+                                            </div>
+                                            {/* People silhouettes */}
+                                            <div className="absolute bottom-4 left-8 w-6 h-10 bg-white/30 rounded-full"></div>
+                                            <div className="absolute bottom-4 right-12 w-6 h-10 bg-white/30 rounded-full"></div>
+                                        </>
+                                    )}
+                                    
+                                    {/* Training - Classroom/Factory Setting */}
+                                    {news.type === 'training' && (
+                                        <>
+                                            {/* Classroom/factory grid */}
+                                            <div className="absolute inset-0 opacity-15" style={{
+                                                backgroundImage: `
+                                                    repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.15) 40px, rgba(255,255,255,0.15) 42px)
+                                                `,
+                                            }}></div>
+                                            {/* Training scene elements */}
+                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                {/* Presentation board/screen */}
+                                                <div className="w-48 h-32 bg-white/20 backdrop-blur-sm rounded-lg border-2 border-white/40 flex flex-col items-center justify-center gap-2 p-4">
+                                                    {/* Chart/diagram representation */}
+                                                    <div className="flex gap-1 items-end h-16">
+                                                        <div className="w-6 h-8 bg-white/40 rounded-t"></div>
+                                                        <div className="w-6 h-12 bg-white/50 rounded-t"></div>
+                                                        <div className="w-6 h-16 bg-white/60 rounded-t"></div>
+                                                        <div className="w-6 h-10 bg-white/40 rounded-t"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {/* Participant icons */}
+                                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <div key={i} className="w-8 h-8 bg-white/30 rounded-full border border-white/40"></div>
+                                                ))}
+                                            </div>
+                                            {/* Award/certificate icon */}
+                                            <div className="absolute top-6 right-6 w-10 h-10 bg-yellow-400/30 rounded-lg rotate-12 flex items-center justify-center">
+                                                <Award className="w-6 h-6 text-white" />
+                                            </div>
+                                        </>
+                                    )}
+                                    
+                                    {/* Date badge */}
+                                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold text-gray-800">
+                                        {news.date}
+                                    </div>
+                                    {/* Hover overlay */}
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
                                 </div>
                                 <div className="p-6">
                                     <p className="text-sm text-blue-600 mb-2">{news.date}</p>
@@ -335,7 +450,7 @@ export default function Index() {
                                     <Factory className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
                                     <div>
                                         <p className="font-medium text-gray-900">Alamat Pabrik</p>
-                                        <p className="text-gray-600">Jl. Industri No. 123, Kawasan Industri MM2100, Cikarang, Bekasi</p>
+                                        <p className="text-gray-600">Jl. Raya Semambung No.296, Semambung Lor, Semambung, Kec. Wonoayu, Kabupaten Sidoarjo, Jawa Timur</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
@@ -356,9 +471,18 @@ export default function Index() {
                                 </div>
                             </div>
 
-                            {/* Map Placeholder */}
-                            <div className="h-64 bg-gray-200 rounded-lg flex items-center justify-center">
-                                <span className="text-gray-500">Google Maps Embed</span>
+                            {/* Google Maps Embed */}
+                            <div className="rounded-lg overflow-hidden shadow-lg">
+                                <iframe 
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4692.909311267798!2d112.61105117574566!3d-7.436275073266963!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e780a0221ba3db7%3A0x408150c4174ca7f0!2sJl.%20Raya%20Semambung%20No.296%2C%20Semambung%20Lor%2C%20Semambung%2C%20Kec.%20Wonoayu%2C%20Kabupaten%20Sidoarjo%2C%20Jawa%20Timur%2061261!5e1!3m2!1sen!2sid!4v1765878966908!5m2!1sen!2sid" 
+                                    width="100%" 
+                                    height="300" 
+                                    style={{ border: 0 }} 
+                                    allowFullScreen="" 
+                                    loading="lazy" 
+                                    referrerPolicy="no-referrer-when-downgrade"
+                                    className="w-full"
+                                ></iframe>
                             </div>
                         </div>
 

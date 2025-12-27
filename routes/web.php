@@ -32,6 +32,34 @@ Route::get('/force-logout', function() {
     return redirect('/login')->with('message', 'Session cleared! Silakan login.');
 })->name('force.logout');
 
+// Debug route - remove after testing
+Route::get('/debug-auth', function() {
+    $user = auth()->user();
+    if (!$user) {
+        return response()->json(['error' => 'Not authenticated']);
+    }
+    
+    return response()->json([
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+        'roles' => $user->roles->pluck('name'),
+        'permissions' => $user->getAllPermissions()->pluck('name'),
+        'has_admin_role' => $user->hasRole('admin'),
+        'has_supervisor_role' => $user->hasRole('supervisor'),
+        'can_access_lines' => $user->hasRole(['admin', 'supervisor']),
+    ]);
+})->middleware('auth');
+
+// Debug PDF route - remove after testing
+Route::get('/debug-pdf', function() {
+    return response()->json([
+        'message' => 'Route exists and accessible',
+        'request_params' => request()->all(),
+        'auth_user' => auth()->check() ? auth()->user()->name : 'Not authenticated',
+    ]);
+})->middleware(['auth']);
+
 // Admin routes
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     
@@ -43,6 +71,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/', [ProductionReportController::class, 'index'])->name('index');
         Route::get('/create', [ProductionReportController::class, 'create'])->name('create');
         Route::post('/', [ProductionReportController::class, 'store'])->name('store');
+        
+        // Export routes - MUST be before {report} parameter routes
+        Route::get('/batch/export-pdf', [ReportExportController::class, 'exportBatchPDF'])->name('batch-export-pdf');
+        Route::get('/{report}/export-pdf', [ReportExportController::class, 'exportReportPDF'])->name('export-pdf');
+        
+        // Parameter routes - MUST be after specific routes
         Route::get('/{report}', [ProductionReportController::class, 'show'])->name('show');
         Route::get('/{report}/edit', [ProductionReportController::class, 'edit'])->name('edit');
         Route::put('/{report}', [ProductionReportController::class, 'update'])->name('update');
@@ -56,8 +90,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/recap', [RecapController::class, 'index'])->name('recap.index');
     
     // Export routes - accessible by all authenticated users
-    Route::get('/reports/{report}/export-pdf', [ReportExportController::class, 'exportReportPDF'])->name('reports.export-pdf');
-    Route::get('/reports/batch/export-pdf', [ReportExportController::class, 'exportBatchPDF'])->name('reports.batch-export-pdf');
     Route::get('/recap/export-excel', [ReportExportController::class, 'exportRecapExcel'])->name('recap.export-excel');
     
     // Master Data - Admin and Supervisor only (role-based check in controller)

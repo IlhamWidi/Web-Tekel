@@ -15,12 +15,14 @@ import { useState } from 'react';
 export default function AdminLayout({ children, title }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [masterDataOpen, setMasterDataOpen] = useState(false);
+    const [laporanOpen, setLaporanOpen] = useState(false);
 
     const navigation = [
         { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
         { 
             name: 'Laporan Produksi', 
             icon: FileText,
+            stateKey: 'laporan',
             children: [
                 { name: 'Input Laporan', href: '/admin/reports/create' },
                 { name: 'Riwayat Laporan', href: '/admin/reports' },
@@ -30,6 +32,7 @@ export default function AdminLayout({ children, title }) {
         { 
             name: 'Master Data', 
             icon: Database,
+            stateKey: 'masterData',
             children: [
                 { name: 'Lines', href: '/admin/lines' },
                 { name: 'Motifs', href: '/admin/motifs' },
@@ -72,35 +75,33 @@ export default function AdminLayout({ children, title }) {
                             item.children ? (
                                 <div key={item.name}>
                                     <button
-                                        onClick={() => item.name === 'Master Data' ? setMasterDataOpen(!masterDataOpen) : null}
+                                        onClick={() => {
+                                            if (item.stateKey === 'masterData') {
+                                                setMasterDataOpen(!masterDataOpen);
+                                            } else if (item.stateKey === 'laporan') {
+                                                setLaporanOpen(!laporanOpen);
+                                            }
+                                        }}
                                         className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
                                     >
                                         <div className="flex items-center gap-3">
                                             <item.icon className="w-5 h-5" />
                                             {item.name}
                                         </div>
-                                        <ChevronDown className={`w-4 h-4 transition-transform ${item.name === 'Master Data' && masterDataOpen ? 'rotate-180' : ''}`} />
+                                        <ChevronDown className={`w-4 h-4 transition-transform ${
+                                            (item.stateKey === 'masterData' && masterDataOpen) || 
+                                            (item.stateKey === 'laporan' && laporanOpen) 
+                                            ? 'rotate-180' : ''
+                                        }`} />
                                     </button>
-                                    {item.name === 'Master Data' && masterDataOpen && (
+                                    {((item.stateKey === 'masterData' && masterDataOpen) || 
+                                      (item.stateKey === 'laporan' && laporanOpen)) && (
                                         <div className="mt-1 ml-8 space-y-1">
                                             {item.children.map((child) => (
                                                 <Link
                                                     key={child.name}
                                                     href={child.href}
-                                                    className="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100"
-                                                >
-                                                    {child.name}
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {item.name === 'Laporan Produksi' && (
-                                        <div className="mt-1 ml-8 space-y-1">
-                                            {item.children.map((child) => (
-                                                <Link
-                                                    key={child.name}
-                                                    href={child.href}
-                                                    className="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100"
+                                                    className="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100 hover:text-blue-600"
                                                 >
                                                     {child.name}
                                                 </Link>

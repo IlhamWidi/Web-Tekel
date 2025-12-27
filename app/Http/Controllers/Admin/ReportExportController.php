@@ -81,18 +81,22 @@ class ReportExportController extends Controller
      */
     public function exportBatchPDF(Request $request)
     {
-        // Check permission
-        if (!$request->user()->can('view production reports')) {
-            abort(403, 'Unauthorized action.');
+        try {
+            \Log::info('PDF Export accessed', ['params' => $request->all()]);
+            
+            $validated = $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
+                'line_id' => 'nullable|exists:lines,id',
+                'shift_id' => 'nullable|exists:shifts,id',
+                'status' => 'nullable|in:draft,pending,approved,rejected',
+            ]);
+            
+            \Log::info('Validation passed', ['validated' => $validated]);
+        } catch (\Exception $e) {
+            \Log::error('PDF Export error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            throw $e;
         }
-
-        $validated = $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'line_id' => 'nullable|exists:lines,id',
-            'shift_id' => 'nullable|exists:shifts,id',
-            'status' => 'nullable|in:draft,pending,approved,rejected',
-        ]);
 
         $query = ProductionReport::with([
             'line',

@@ -118,13 +118,23 @@ export default function Index({
 
             {/* Export Buttons */}
             <div className="flex gap-3 mb-6">
-                <a href={`/admin/recap/export-excel?${new URLSearchParams(data).toString()}`}>
+                <a href={`/admin/recap/export-excel?${new URLSearchParams({
+                    start_date: data.date_from || filters.date_from,
+                    end_date: data.date_to || filters.date_to,
+                    ...(data.line_id && { line_id: data.line_id }),
+                    ...(data.shift_id && { shift_id: data.shift_id })
+                }).toString()}`}>
                     <Button variant="success" className="flex items-center gap-2">
                         <Download className="w-4 h-4" />
                         Export Excel
                     </Button>
                 </a>
-                <a href={`/admin/reports/batch/export-pdf?${new URLSearchParams(data).toString()}`} target="_blank">
+                <a href={`/admin/reports/batch/export-pdf?${new URLSearchParams({
+                    start_date: data.date_from || filters.date_from,
+                    end_date: data.date_to || filters.date_to,
+                    ...(data.line_id && { line_id: data.line_id }),
+                    ...(data.shift_id && { shift_id: data.shift_id })
+                }).toString()}`}>
                     <Button variant="danger" className="flex items-center gap-2">
                         <FileText className="w-4 h-4" />
                         Export PDF
