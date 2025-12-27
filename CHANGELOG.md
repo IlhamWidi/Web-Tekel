@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added - 2025-12-27
+- **Glassmorphism design** for login page with professional UI
+- **Hero section component** for landing page
+- **Role-based middleware** (CheckRole) for enhanced access control
+- **Enhanced admin recap page** with modern UI components
+- **PROJECT_REPORT.md** for comprehensive project documentation
+- **Pull request template** for better collaboration
+
+### Changed - 2025-12-27
+- **Redesigned login page** with modern glassmorphism effect and gradient backgrounds
+- **Improved RecapExport** performance and error handling
+- **Enhanced ProductionReportController** with better data handling
+- **Updated AdminLayout** with improved navigation structure
+- **Optimized Inertia middleware** for smoother page transitions
+- **Updated landing page** with comprehensive company information and engaging hero section
+- **Professional color scheme** consistent with brand identity (Blue primary)
+
+### Removed - 2025-12-27
+- **Demo credentials** from login page for enhanced security
+- **Unnecessary debug logs** from production code
+
+### Security - 2025-12-27
+- **Removed public display** of demo credentials
+- **Enhanced role-based** access control with CheckRole middleware
+- **Improved authentication** security flow
+
 ## [1.0.0] - 2025-12-14
 
 ### Added
